@@ -1,4 +1,4 @@
-accelerate==1.4.0
+# accelerate==1.4.0
 diffusers==0.32.2
 torch==2.7.0
 torchvision>=0.20.0

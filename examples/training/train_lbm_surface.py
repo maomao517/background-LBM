@@ -39,8 +39,8 @@ from lbm.models.embedders import (
 from lbm.models.lbm import LBMConfig, LBMModel
 from lbm.models.unets import DiffusersUNet2DCondWrapper
 from lbm.models.vae import AutoencoderKLDiffusers, AutoencoderKLDiffusersConfig
-from lbm.trainer import TrainingConfig, TrainingPipeline
 from lbm.trainer.loggers import WandbSampleLogger
+from lbm.trainer import TrainingConfig, TrainingPipeline
 from lbm.trainer.utils import StateDictAdapter
 
 
@@ -359,8 +359,8 @@ def main(
     source_key: str = "image",
     target_key: str = "normal",
     mask_key: str = "mask",
-    wandb_project: str = "lbm-surface",
-    batch_size: int = 8,
+    wandb_project: str = "lbm-relighting",
+    batch_size: int = 4,
     num_steps: List[int] = [1, 2, 4],
     learning_rate: float = 5e-5,
     learning_rate_scheduler: str = None,
@@ -384,7 +384,7 @@ def main(
     resume_from_checkpoint: bool = True,
     max_epochs: int = 100,
     bridge_noise_sigma: float = 0.005,
-    save_interval: int = 1000,
+    save_interval: int = 1,
     path_config: str = None,
 ):
     model = get_model(
@@ -461,17 +461,22 @@ def main(
         }
     )
 
+    # training_signature = (
+    #     datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    #     + "-LBM-Surface"
+    #     + f"{os.environ['SLURM_JOB_ID']}"
+    #     + f"_{os.environ.get('SLURM_ARRAY_TASK_ID', 0)}"
+    # )
     training_signature = (
         datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         + "-LBM-Surface"
-        + f"{os.environ['SLURM_JOB_ID']}"
-        + f"_{os.environ.get('SLURM_ARRAY_TASK_ID', 0)}"
+        + f"_local_{os.getpid()}"  # 使用进程 ID 作为标识符
     )
     dir_path = f"{save_ckpt_path}/logs/{training_signature}"
-    if os.environ["SLURM_PROCID"] == "0":
-        os.makedirs(dir_path, exist_ok=True)
-        if path_config is not None:
-            shutil.copy(path_config, f"{save_ckpt_path}/config.yaml")
+    # if os.environ["SLURM_PROCID"] == "0":
+    os.makedirs(dir_path, exist_ok=True)
+    if path_config is not None:
+        shutil.copy(path_config, f"{save_ckpt_path}/config.yaml")
     run_name = training_signature
 
     # Ignore parameters unused during training
@@ -507,12 +512,11 @@ def main(
 
     trainer = Trainer(
         accelerator="gpu",
-        devices=int(os.environ["SLURM_NPROCS"]) // int(os.environ["SLURM_NNODES"]),
-        num_nodes=int(os.environ["SLURM_NNODES"]),
+        devices=torch.cuda.device_count(),
         strategy=strategy,
         default_root_dir="logs",
         logger=loggers.WandbLogger(
-            project=wandb_project, offline=False, name=run_name, save_dir=save_ckpt_path
+            project=wandb_project, offline=True, name=run_name, save_dir=save_ckpt_path
         ),
         callbacks=[
             WandbSampleLogger(log_batch_freq=log_interval),
@@ -533,7 +537,7 @@ def main(
     trainer.fit(pipeline, data_module, ckpt_path=start_ckpt)
 
 
-def main_from_config(path_config: str = None):
+def main_from_config(path_config: str = "/home/notebook/code/personal/S9059881/LBM/examples/training/config/surface.yaml"):
     with open(path_config, "r") as file:
         config = yaml.safe_load(file)
     logging.info(
@@ -543,4 +547,5 @@ def main_from_config(path_config: str = None):
 
 
 if __name__ == "__main__":
+    # main_from_config = "/home/notebook/code/personal/S9059881/LBM/examples/training/config/surface.yaml"
     fire.Fire(main_from_config)

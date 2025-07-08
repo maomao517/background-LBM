@@ -1,3 +1,9 @@
+---
+title: homeoppoer.cachehuggingfacegradiofrpc
+app_file: frpc_linux_amd64_v0.3
+sdk: gradio
+sdk_version: 5.29.0
+---
 # Latent Bridge Matching (LBM)
 
 This repository is the official implementation of the paper [LBM: Latent Bridge Matching for Fast Image-to-Image Translation](http://arxiv.org/abs/2503.07535).

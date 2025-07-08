@@ -1,5 +1,5 @@
 # wandb
-wandb_project: lbm-surface-flows
+wandb_project: lbm-relighting
 timestep_sampling: custom_timesteps
 unet_input_channels: 4
 vae_num_channels: 4
@@ -15,10 +15,10 @@ conditioning_masks_keys: []
 
 # SHARDS_PATH_OR_URLS
 train_shards:
-  - pipe:cat PATH_TO_TRAIN_TARS
+  - pipe:cat /home/notebook/code/personal/S9059881/LBM/dataset/train.tar
 
 validation_shards:
-  - pipe:cat PATH_TO_VAL_TARS
+  - pipe:cat /home/notebook/code/personal/S9059881/LBM/dataset/valid.tar
 
 batch_size: 4
 learning_rate: 4e-5

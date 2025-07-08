@@ -51,6 +51,9 @@ def main():
     source_image.save(os.path.join(args.output_path, "source_image.jpg"))
     output_image.save(os.path.join(args.output_path, "output_image.jpg"))
 
+    del model
+    torch.cuda.empty_cache()
+
 
 if __name__ == "__main__":
     main()

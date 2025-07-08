@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import torch
-import wandb
+
 from PIL import Image, ImageDraw, ImageFont
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import Callback
@@ -158,6 +158,7 @@ class WandbSampleLogger(Callback):
     def _process_logs(
         self, trainer, logs: Dict[str, Any], rescale=True, split="train"
     ) -> Dict[str, Any]:
+        import wandb
         for key, value in logs.items():
             if isinstance(value, torch.Tensor):
                 value = value.detach().cpu()
